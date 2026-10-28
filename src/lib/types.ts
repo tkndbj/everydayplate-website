@@ -1,4 +1,5 @@
 import type { PortableTextBlock } from "next-sanity";
+import type { RichText } from "./rich-text";
 
 export interface SiteImage {
   src: string;
@@ -17,7 +18,7 @@ export interface CategoryRef {
 }
 
 export interface Category extends CategoryRef {
-  description?: string;
+  description?: RichText;
   image?: SiteImage;
   count: number;
 }
@@ -28,7 +29,7 @@ export interface RecipeCard {
   _id: string;
   title: string;
   slug: string;
-  excerpt?: string;
+  excerpt?: RichText;
   image?: SiteImage;
   prepTime?: number;
   cookTime?: number;
@@ -40,9 +41,9 @@ export interface RecipeCard {
 
 export interface Recipe extends RecipeCard {
   servings?: number;
-  ingredients: string;
-  steps: string[];
-  tips?: string;
+  ingredients: RichText;
+  steps: RichText;
+  tips?: RichText;
   youtubeUrl?: string;
   intro?: PortableTextBlock[];
   updatedAt: string;
@@ -59,7 +60,7 @@ export interface VideoCard {
 }
 
 export interface Video extends VideoCard {
-  description?: string;
+  description?: RichText;
   categories: CategoryRef[];
   recipe?: RecipeCard;
 }
@@ -68,7 +69,7 @@ export interface PostCard {
   _id: string;
   title: string;
   slug: string;
-  excerpt?: string;
+  excerpt?: RichText;
   image?: SiteImage;
   publishedAt: string;
   categories: CategoryRef[];
@@ -82,10 +83,10 @@ export interface Post extends PostCard {
 export interface SiteSettings {
   tagline: string;
   heroTitle: string;
-  heroText?: string;
+  heroText?: RichText;
   heroImage?: SiteImage;
   portrait?: SiteImage;
-  aboutShort?: string;
+  aboutShort?: RichText;
   aboutBody?: PortableTextBlock[];
   social: {
     youtube?: string;

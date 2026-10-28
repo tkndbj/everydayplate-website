@@ -1,12 +1,11 @@
 "use client";
 
 import { Check } from "lucide-react";
-import { useState } from "react";
-import type { IngredientSection } from "@/lib/utils";
+import { useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 /** Ingredients the cook can tick off while shopping or cooking. */
-export function IngredientList({ sections }: { sections: IngredientSection[] }) {
+export function IngredientList({ sections }: { sections: { title?: ReactNode; items: ReactNode[] }[] }) {
   const [checked, setChecked] = useState<Set<string>>(new Set());
 
   const toggle = (key: string) =>

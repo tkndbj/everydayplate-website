@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { toPlainText } from "@/lib/rich-text";
 import type { PostCard } from "@/lib/types";
 import { cn, formatDate } from "@/lib/utils";
 import { Img } from "../Img";
@@ -11,6 +12,7 @@ interface Props {
 
 export function StoryCard({ post, className, layout = "stacked" }: Props) {
   const row = layout === "row";
+  const excerpt = toPlainText(post.excerpt);
   return (
     <article className={cn("group relative", row ? "grid grid-cols-[7rem_1fr] items-center gap-5 sm:grid-cols-[10rem_1fr]" : "flex flex-col", className)}>
       <div
@@ -39,8 +41,8 @@ export function StoryCard({ post, className, layout = "stacked" }: Props) {
             {post.title}
           </Link>
         </h3>
-        {post.excerpt && !row && (
-          <p className="mt-2 line-clamp-2 text-[0.9375rem] leading-relaxed text-muted">{post.excerpt}</p>
+        {excerpt && !row && (
+          <p className="mt-2 line-clamp-2 text-[0.9375rem] leading-relaxed text-muted">{excerpt}</p>
         )}
       </div>
     </article>

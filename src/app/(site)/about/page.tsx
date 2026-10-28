@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Img } from "@/components/Img";
 import { PortableBody } from "@/components/PortableBody";
+import { RichText } from "@/components/RichText";
 import { SocialLinks } from "@/components/SocialLinks";
 import { JsonLd } from "@/components/ui";
 import { getSettings } from "@/lib/data";
@@ -45,9 +46,10 @@ export default async function AboutPage() {
           <h1 className="mt-3 animate-fade-up text-5xl leading-[1.05] text-ink sm:text-6xl">
             Hello, I’m Mustafa<span className="text-terracotta">.</span>
           </h1>
-          {settings.aboutShort && (
-            <p className="mt-6 animate-fade-up font-serif text-2xl leading-snug text-ink-soft">{settings.aboutShort}</p>
-          )}
+          <RichText
+            value={settings.aboutShort}
+            className="mt-6 animate-fade-up font-serif text-2xl leading-snug text-ink-soft"
+          />
           <PortableBody value={settings.aboutBody} className="mt-10" />
           <div className="mt-12 flex flex-wrap gap-3">
             <Link href="/recipes" className="btn btn-primary">

@@ -6,8 +6,10 @@ import { Suspense } from "react";
 import { RecipeCard } from "@/components/cards/RecipeCard";
 import { StoryCard } from "@/components/cards/StoryCard";
 import { VideoCard } from "@/components/cards/VideoCard";
+import { RichText } from "@/components/RichText";
 import { EmptyState, GridSkeleton, PageIntro, SectionHeader } from "@/components/ui";
 import { getCategories, getCategoryPage } from "@/lib/data";
+import { toPlainText } from "@/lib/rich-text";
 import { toStaticParams } from "@/lib/utils";
 
 export async function generateStaticParams() {
@@ -20,7 +22,7 @@ export async function generateMetadata({ params }: PageProps<"/categories/[slug]
   if (!category) return { title: "Category not found", robots: { index: false } };
   return {
     title: category.title,
-    description: category.description ?? `${category.title} recipes, videos and stories from Everyday Plate.`,
+    description: toPlainText(category.description) || `${category.title} recipes, videos and stories from Everyday Plate.`,
     alternates: { canonical: `/categories/${category.slug}` },
   };
 }
@@ -51,7 +53,7 @@ async function CategoryContent({ params }: Pick<PageProps<"/categories/[slug]">,
   return (
     <>
       <PageIntro eyebrow="Category" title={category.title}>
-        {category.description}
+        <RichText value={category.description} />
       </PageIntro>
 
       <div className="container-page space-y-20">

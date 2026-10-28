@@ -1,5 +1,5 @@
 import { LemonIcon } from "@sanity/icons/Lemon";
-import { defineArrayMember, defineField, defineType } from "sanity";
+import { defineField, defineType } from "sanity";
 import {
   categoriesField,
   excerptField,
@@ -8,6 +8,7 @@ import {
   slugField,
   youtubeUrlField,
 } from "./fields";
+import { richTextField, textBlock } from "./richText";
 
 export const recipe = defineType({
   name: "recipe",
@@ -73,12 +74,19 @@ export const recipe = defineType({
     defineField({
       name: "ingredients",
       title: "Ingredients",
-      type: "text",
+      type: "array",
       group: "cooking",
-      rows: 12,
       description:
-        "Write one ingredient per line. For a small heading, start the line with # — for example “# For the sauce”.",
-      placeholder: "# For the salad\n2 tomatoes, chopped\n1 cucumber\n200 g halloumi",
+        "One ingredient per line (press Enter for the next one). For a small heading like “For the sauce”, choose “Heading” in the text style menu.",
+      of: [
+        textBlock({
+          withLists: false,
+          styles: [
+            { title: "Ingredient", value: "normal" },
+            { title: "Heading", value: "h3" },
+          ],
+        }),
+      ],
       validation: (rule) => rule.required().error("Add at least one ingredient."),
     }),
     defineField({
@@ -86,18 +94,19 @@ export const recipe = defineType({
       title: "Method",
       type: "array",
       group: "cooking",
-      description: "Add one box per step. Drag the ⋮⋮ handle to reorder.",
-      of: [defineArrayMember({ type: "text", rows: 3 })],
-      validation: (rule) => rule.required().min(1).error("Add at least one step."),
+      description: "One paragraph per step (press Enter for the next step). Steps are numbered automatically.",
+      of: [textBlock({ withLists: false })],
+      validation: (rule) => rule.required().error("Add at least one step."),
     }),
-    defineField({
-      name: "tips",
-      title: "Chef’s tips (optional)",
-      type: "text",
+    {
+      ...richTextField({
+        name: "tips",
+        title: "Chef’s tips (optional)",
+        description: "Little secrets, swaps or storage advice. One tip per paragraph.",
+        withLists: false,
+      }),
       group: "cooking",
-      rows: 4,
-      description: "Little secrets, swaps or storage advice. One tip per line.",
-    }),
+    },
 
     { ...youtubeUrlField(), title: "Recipe video (optional)", group: "extras" },
     defineField({

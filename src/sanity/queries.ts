@@ -25,7 +25,7 @@ const POST_CARD = `{${POST_FIELDS}}`;
 
 const SETTINGS = `*[_type == "siteSettings"][0]{
   tagline, heroTitle, heroText, "heroImage": heroImage${IMAGE}, "portrait": portrait${IMAGE},
-  aboutShort, aboutBody[]{ ..., _type == "image" => ${IMAGE} }, youtube, instagram, tiktok, facebook, email
+  aboutIntro, aboutShort, aboutBody[]{ ..., _type == "image" => ${IMAGE} }, youtube, instagram, tiktok, facebook, email
 }`;
 
 const CATEGORY_LIST = `*[_type == "category" && defined(slug.current) && ($homeOnly == false || showOnHome != false)]
@@ -103,11 +103,11 @@ export const categoryPageQuery = defineQuery(`*[_type == "category" && slug.curr
 }`);
 
 export const searchQuery = defineQuery(`*[_type in ["recipe", "post", "video"] && ${PUBLISHED} && (
-    title match $term || excerpt match $term || description match $term ||
-    ingredients match $term || pt::text(body) match $term
-  )] | score(boost(title match $term, 3), excerpt match $term, ingredients match $term)
+    title match $term || pt::text(excerpt) match $term || pt::text(description) match $term ||
+    pt::text(ingredients) match $term || pt::text(body) match $term
+  )] | score(boost(title match $term, 3), pt::text(excerpt) match $term, pt::text(ingredients) match $term)
   | order(_score desc, publishedAt desc)[0...30]{
-    _id, _type, title, "slug": slug.current, "excerpt": coalesce(excerpt, description),
+    _id, _type, title, "slug": slug.current, "excerpt": coalesce(pt::text(excerpt), pt::text(description)),
     "image": coalesce(mainImage, thumbnail)${IMAGE}, youtubeUrl
   }`);
 

@@ -6,9 +6,11 @@ import { Suspense } from "react";
 import { RecipeCard } from "@/components/cards/RecipeCard";
 import { VideoCard } from "@/components/cards/VideoCard";
 import { ShareActions } from "@/components/recipe/ShareActions";
+import { RichText } from "@/components/RichText";
 import { JsonLd, SectionHeader } from "@/components/ui";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
 import { getSlugs, getVideo } from "@/lib/data";
+import { toPlainText } from "@/lib/rich-text";
 import { cn, formatDate, toStaticParams } from "@/lib/utils";
 
 export async function generateStaticParams() {
@@ -22,12 +24,12 @@ export async function generateMetadata({ params }: PageProps<"/videos/[slug]">):
   const { video } = data;
   return {
     title: video.title,
-    description: video.description,
+    description: toPlainText(video.description) || undefined,
     alternates: { canonical: `/videos/${video.slug}` },
     openGraph: {
       type: "video.other",
       title: video.title,
-      description: video.description,
+      description: toPlainText(video.description) || undefined,
       images: video.thumbnail ? [{ url: video.thumbnail.src }] : undefined,
     },
   };
@@ -56,7 +58,7 @@ async function VideoContent({ params }: Pick<PageProps<"/videos/[slug]">, "param
             "@context": "https://schema.org",
             "@type": "VideoObject",
             name: video.title,
-            description: video.description || video.title,
+            description: toPlainText(video.description) || video.title,
             thumbnailUrl: video.thumbnail?.src,
             uploadDate: video.publishedAt,
             embedUrl: `https://www.youtube.com/embed/${video.youtubeId}`,
@@ -78,9 +80,7 @@ async function VideoContent({ params }: Pick<PageProps<"/videos/[slug]">, "param
           </Link>
           <p className="eyebrow mt-6">{video.isShort ? "Short" : "Video"} · {formatDate(video.publishedAt)}</p>
           <h1 className="mt-3 text-4xl leading-tight text-ink sm:text-5xl">{video.title}</h1>
-          {video.description && (
-            <p className="mt-5 whitespace-pre-line text-lg leading-relaxed text-muted">{video.description}</p>
-          )}
+          <RichText value={video.description} className="mt-5 text-lg leading-relaxed text-muted" />
           <div className="mt-6 flex flex-wrap gap-2">
             {video.categories.map((c) => (
               <Link key={c.slug} href={`/categories/${c.slug}`} className="chip">

@@ -1,6 +1,7 @@
 import { PlayIcon } from "@sanity/icons/Play";
 import { defineField, defineType } from "sanity";
 import { getYouTubeId, isYouTubeShort, youTubeThumbnail } from "@/lib/youtube";
+import { richTextField } from "./richText";
 import { categoriesField, imageField, publishedAtField, slugField, youtubeUrlField } from "./fields";
 
 export const video = defineType({
@@ -39,12 +40,7 @@ export const video = defineType({
           return true;
         }),
     }),
-    defineField({
-      name: "description",
-      title: "Description (optional)",
-      type: "text",
-      rows: 4,
-    }),
+    richTextField({ name: "description", title: "Description (optional)" }),
     categoriesField,
     defineField({
       name: "recipe",

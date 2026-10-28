@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Clock, Play } from "lucide-react";
+import { toPlainText } from "@/lib/rich-text";
 import type { RecipeCard as RecipeCardData } from "@/lib/types";
 import { cn, formatMinutes } from "@/lib/utils";
 import { Img } from "../Img";
@@ -19,6 +20,7 @@ export function RecipeCard({
 }: Props) {
   const time = formatMinutes((recipe.prepTime ?? 0) + (recipe.cookTime ?? 0));
   const category = recipe.categories[0];
+  const excerpt = toPlainText(recipe.excerpt);
 
   return (
     <article className={cn("group relative flex flex-col", className)}>
@@ -49,7 +51,7 @@ export function RecipeCard({
             {recipe.title}
           </Link>
         </h3>
-        {recipe.excerpt && <p className="mt-2 line-clamp-2 text-[0.9375rem] leading-relaxed text-muted">{recipe.excerpt}</p>}
+        {excerpt && <p className="mt-2 line-clamp-2 text-[0.9375rem] leading-relaxed text-muted">{excerpt}</p>}
       </div>
     </article>
   );

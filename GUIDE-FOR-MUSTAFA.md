@@ -30,13 +30,8 @@ There's also a small **"Kitchen login"** link at the bottom of every page.
    - Under **Web address**, click **Generate**.
    - After uploading a photo, you can drag the circle onto the most important part of the dish. The site will always keep that part in view.
 3. Tab **2. Ingredients & method**
-   - **Ingredients:** one per line. For a small heading, start the line with `#`:
-     ```
-     # For the sauce
-     2 tomatoes
-     1 garlic clove
-     ```
-   - **Method:** click **Add item** for each step. Drag the ⋮⋮ handle to reorder.
+   - **Ingredients:** one per line (press Enter for the next one). For a small heading like "For the sauce", put the cursor on that line and choose **Heading** in the text style menu.
+   - **Method:** one paragraph per step (press Enter for the next step). The website numbers the steps for you.
 4. Tab **3. Extras** (optional): a YouTube link, the story behind the dish, and **Feature on the home page**.
 5. Click the green **Publish** button at the bottom right. ✅
 
@@ -57,6 +52,24 @@ It's on the website within a minute.
 ## 🏷️ Categories
 
 Add as many as you like in **Categories**. Give each one a photo so it looks nice on the home page. Use **Position** (1, 2, 3…) to choose the order.
+
+---
+
+## ✨ Formatting your text
+
+Every text box (summaries, descriptions, ingredients, method, tips, stories, About) has a small toolbar:
+
+| Button | What it does |
+|---|---|
+| **B** | **Bold** |
+| *I* | *Italic* |
+| U | Underline |
+| 🔗 | Turn the selected words into a link |
+| Text style menu (says "Normal text") | **Centred text**, **Right-aligned text**, headings and quotes |
+
+Select words and click a button, or use the keyboard: **Ctrl+B** for bold, **Ctrl+I** for italic and **Ctrl+U** for underline (**⌘** on a Mac). Alignment applies to the whole paragraph where your cursor is.
+
+Titles and names stay plain. They're also used for the web address, the browser tab and Google results, and the website styles them for you.
 
 ---
 

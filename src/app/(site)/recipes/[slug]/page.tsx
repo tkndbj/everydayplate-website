@@ -6,18 +6,19 @@ import { Suspense } from "react";
 import { RecipeCard } from "@/components/cards/RecipeCard";
 import { Img } from "@/components/Img";
 import { PortableBody } from "@/components/PortableBody";
+import { InlineText, RichText } from "@/components/RichText";
 import { IngredientList } from "@/components/recipe/IngredientList";
 import { ShareActions } from "@/components/recipe/ShareActions";
 import { JsonLd, SectionHeader } from "@/components/ui";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
 import { getRecipe, getSlugs } from "@/lib/data";
+import { blockText, ingredientSections, toBlocks, toPlainText } from "@/lib/rich-text";
 import { site } from "@/lib/site";
 import {
   difficultyLabel,
   formatDate,
   formatMinutes,
   isoDuration,
-  parseIngredients,
   toStaticParams,
 } from "@/lib/utils";
 import { getYouTubeId, isYouTubeShort, youTubeThumbnail } from "@/lib/youtube";
@@ -33,12 +34,12 @@ export async function generateMetadata({ params }: PageProps<"/recipes/[slug]">)
   const { recipe } = data;
   return {
     title: recipe.title,
-    description: recipe.excerpt,
+    description: toPlainText(recipe.excerpt) || undefined,
     alternates: { canonical: `/recipes/${recipe.slug}` },
     openGraph: {
       type: "article",
       title: recipe.title,
-      description: recipe.excerpt,
+      description: toPlainText(recipe.excerpt) || undefined,
       publishedTime: recipe.publishedAt,
       images: recipe.image ? [{ url: ogUrl(recipe.image.src), width: 1200, height: 630, alt: recipe.image.alt }] : undefined,
     },
@@ -60,8 +61,9 @@ async function RecipeContent({ params }: Pick<PageProps<"/recipes/[slug]">, "par
   const { recipe, related } = data;
 
   const total = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
-  const sections = parseIngredients(recipe.ingredients);
-  const tips = recipe.tips?.split(/\r?\n/).map((t) => t.trim()).filter(Boolean) ?? [];
+  const sections = ingredientSections(recipe.ingredients);
+  const steps = toBlocks(recipe.steps);
+  const excerpt = toPlainText(recipe.excerpt);
   const videoId = getYouTubeId(recipe.youtubeUrl);
 
   const facts = [
@@ -78,7 +80,7 @@ async function RecipeContent({ params }: Pick<PageProps<"/recipes/[slug]">, "par
           "@context": "https://schema.org",
           "@type": "Recipe",
           name: recipe.title,
-          description: recipe.excerpt,
+          description: excerpt || undefined,
           image: recipe.image ? [ogUrl(recipe.image.src)] : undefined,
           author: { "@type": "Person", name: site.author },
           datePublished: recipe.publishedAt,
@@ -89,17 +91,17 @@ async function RecipeContent({ params }: Pick<PageProps<"/recipes/[slug]">, "par
           recipeYield: recipe.servings ? `${recipe.servings} servings` : undefined,
           recipeCategory: recipe.categories[0]?.title,
           recipeCuisine: "Cypriot",
-          recipeIngredient: sections.flatMap((s) => s.items),
-          recipeInstructions: recipe.steps.map((text, i) => ({
+          recipeIngredient: sections.flatMap((s) => s.items.map(blockText)),
+          recipeInstructions: steps.map((step, i) => ({
             "@type": "HowToStep",
             position: i + 1,
-            text,
+            text: blockText(step),
           })),
           video: videoId
             ? {
                 "@type": "VideoObject",
                 name: recipe.title,
-                description: recipe.excerpt || recipe.title,
+                description: excerpt || recipe.title,
                 thumbnailUrl: youTubeThumbnail(videoId),
                 embedUrl: `https://www.youtube.com/embed/${videoId}`,
                 uploadDate: recipe.publishedAt,
@@ -125,7 +127,7 @@ async function RecipeContent({ params }: Pick<PageProps<"/recipes/[slug]">, "par
             )}
           </nav>
           <h1 className="mt-4 text-4xl leading-[1.05] text-ink sm:text-6xl">{recipe.title}</h1>
-          {recipe.excerpt && <p className="mt-5 text-lg leading-relaxed text-muted">{recipe.excerpt}</p>}
+          <RichText value={recipe.excerpt} className="mt-5 text-lg leading-relaxed text-muted" />
 
           {facts.length > 0 && (
             <dl className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-line ring-1 ring-line sm:grid-cols-4">
@@ -169,7 +171,12 @@ async function RecipeContent({ params }: Pick<PageProps<"/recipes/[slug]">, "par
             <h2 className="text-2xl text-ink">Ingredients</h2>
             {recipe.servings && <p className="mt-1 text-sm text-muted">Serves {recipe.servings}</p>}
             <div className="mt-6">
-              <IngredientList sections={sections} />
+              <IngredientList
+                sections={sections.map((s) => ({
+                  title: s.title && <InlineText block={s.title} />,
+                  items: s.items.map((item) => <InlineText key={item._key} block={item} />),
+                }))}
+              />
             </div>
           </div>
         </aside>
@@ -183,29 +190,22 @@ async function RecipeContent({ params }: Pick<PageProps<"/recipes/[slug]">, "par
 
           <h2 className="text-3xl text-ink">Method</h2>
           <ol className="mt-8 space-y-8">
-            {recipe.steps.map((step, i) => (
-              <li key={i} className="grid grid-cols-[2.75rem_1fr] gap-4">
+            {steps.map((step, i) => (
+              <li key={step._key ?? i} className="grid grid-cols-[2.75rem_1fr] gap-4">
                 <span className="grid size-11 place-items-center rounded-full bg-terracotta-soft font-serif text-lg font-semibold text-terracotta-dark">
                   {i + 1}
                 </span>
-                <p className="whitespace-pre-line pt-2 text-[1.0625rem] leading-relaxed text-ink-soft">{step}</p>
+                <RichText value={[step]} className="pt-2 text-[1.0625rem] leading-relaxed text-ink-soft" />
               </li>
             ))}
           </ol>
 
-          {tips.length > 0 && (
+          {toBlocks(recipe.tips).length > 0 && (
             <div className="mt-12 rounded-[var(--radius-card)] bg-olive-soft/70 p-6 sm:p-8">
               <h2 className="flex items-center gap-2 text-2xl text-ink">
                 <Lightbulb className="size-6 text-olive" /> Chef’s tips
               </h2>
-              <ul className="mt-4 space-y-3">
-                {tips.map((tip, i) => (
-                  <li key={i} className="flex gap-3 leading-relaxed text-ink-soft">
-                    <span className="mt-2.5 size-1.5 shrink-0 rounded-full bg-olive" />
-                    {tip}
-                  </li>
-                ))}
-              </ul>
+              <RichText value={recipe.tips} className="mt-4 leading-relaxed text-ink-soft" />
             </div>
           )}
         </div>

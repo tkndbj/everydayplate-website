@@ -1,6 +1,7 @@
 import { defineArrayMember, defineField } from "sanity";
 import { YouTubeInput } from "../components/YouTubeInput";
 import { slugify } from "../lib/slugify";
+import { richTextField } from "./richText";
 
 /** Shared field builders so every content type behaves the same way in the admin. */
 
@@ -51,14 +52,7 @@ export const categoriesField = defineField({
 });
 
 export const excerptField = (description = "One or two sentences shown on cards and in Google results.") =>
-  defineField({
-    name: "excerpt",
-    title: "Short summary",
-    type: "text",
-    rows: 3,
-    description,
-    validation: (rule) => rule.max(240).warning("Keep it under 240 characters so it fits on cards."),
-  });
+  richTextField({ name: "excerpt", title: "Short summary", description, maxLength: 240, withLists: false });
 
 export const youtubeUrlField = (required = false) =>
   defineField({

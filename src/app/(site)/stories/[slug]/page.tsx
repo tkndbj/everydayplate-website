@@ -5,9 +5,11 @@ import { Suspense } from "react";
 import { StoryCard } from "@/components/cards/StoryCard";
 import { Img } from "@/components/Img";
 import { PortableBody } from "@/components/PortableBody";
+import { RichText } from "@/components/RichText";
 import { ShareActions } from "@/components/recipe/ShareActions";
 import { JsonLd, SectionHeader } from "@/components/ui";
 import { getPost, getSlugs } from "@/lib/data";
+import { toPlainText } from "@/lib/rich-text";
 import { site } from "@/lib/site";
 import { formatDate, toStaticParams } from "@/lib/utils";
 
@@ -22,12 +24,12 @@ export async function generateMetadata({ params }: PageProps<"/stories/[slug]">)
   const { post } = data;
   return {
     title: post.title,
-    description: post.excerpt,
+    description: toPlainText(post.excerpt) || undefined,
     alternates: { canonical: `/stories/${post.slug}` },
     openGraph: {
       type: "article",
       title: post.title,
-      description: post.excerpt,
+      description: toPlainText(post.excerpt) || undefined,
       publishedTime: post.publishedAt,
       authors: [site.author],
       images: post.image ? [{ url: post.image.src, alt: post.image.alt }] : undefined,
@@ -56,7 +58,7 @@ async function StoryContent({ params }: Pick<PageProps<"/stories/[slug]">, "para
           "@context": "https://schema.org",
           "@type": "BlogPosting",
           headline: post.title,
-          description: post.excerpt,
+          description: toPlainText(post.excerpt) || undefined,
           image: post.image?.src,
           datePublished: post.publishedAt,
           dateModified: post.updatedAt,
@@ -72,9 +74,10 @@ async function StoryContent({ params }: Pick<PageProps<"/stories/[slug]">, "para
           <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
         </p>
         <h1 className="mt-4 animate-fade-up text-4xl leading-[1.08] text-ink sm:text-6xl">{post.title}</h1>
-        {post.excerpt && (
-          <p className="mx-auto mt-6 max-w-2xl animate-fade-up text-xl leading-relaxed text-muted">{post.excerpt}</p>
-        )}
+        <RichText
+          value={post.excerpt}
+          className="mx-auto mt-6 max-w-2xl animate-fade-up text-xl leading-relaxed text-muted"
+        />
       </header>
 
       {post.image && (

@@ -43,6 +43,8 @@ import type {
   Video,
   VideoCard,
 } from "./types";
+import type { RichText } from "./rich-text";
+import { toPlainText } from "./rich-text";
 import { getYouTubeId, isYouTubeShort, youTubeThumbnail } from "./youtube";
 
 /**
@@ -102,6 +104,7 @@ const range = (page: number, size: number) => ({ start: (page - 1) * size, end: 
 /* --------------------------------------------------------------- settings */
 
 type RawSettings = Partial<Omit<SiteSettings, "heroImage" | "portrait" | "social">> & {
+  aboutIntro?: RichText;
   heroImage?: RawImage;
   portrait?: RawImage;
   youtube?: string;
@@ -118,7 +121,7 @@ function mapSettings(raw: RawSettings): SiteSettings {
     heroText: raw?.heroText || undefined,
     heroImage: toImage(raw?.heroImage, "Everyday Plate"),
     portrait: toImage(raw?.portrait, "Mustafa Özdeşer"),
-    aboutShort: raw?.aboutShort || undefined,
+    aboutShort: raw?.aboutIntro?.length ? raw.aboutIntro : raw?.aboutShort || undefined,
     aboutBody: mapBlocks(raw?.aboutBody),
     social: {
       youtube: raw?.youtube,
@@ -202,7 +205,7 @@ function mapCategories(raw: (Omit<Category, "image"> & { image?: RawImage })[] |
 export interface CategoryPage {
   title: string;
   slug: string;
-  description?: string;
+  description?: RichText;
   recipes: RecipeCard[];
   recipeTotal: number;
   videos: VideoCard[];
@@ -282,7 +285,7 @@ export async function getRecipe(slug: string): Promise<{ recipe: Recipe; related
   const recipe: Recipe = {
     ...(mapCard(raw) as RecipeCard),
     servings: raw.servings ?? undefined,
-    ingredients: raw.ingredients ?? "",
+    ingredients: raw.ingredients ?? [],
     steps: raw.steps ?? [],
     tips: raw.tips ?? undefined,
     youtubeUrl: raw.youtubeUrl ?? undefined,
@@ -402,14 +405,14 @@ export async function search(term: string): Promise<SearchResult[]> {
     const hit = (...fields: (string | undefined)[]) => fields.some((f) => f?.toLocaleLowerCase().includes(needle));
     return [
       ...sampleRecipes
-        .filter((r) => hit(r.title, r.excerpt, r.ingredients))
-        .map((r) => ({ _id: r._id, _type: "recipe" as const, title: r.title, slug: r.slug, excerpt: r.excerpt, image: r.image })),
+        .filter((r) => hit(r.title, toPlainText(r.excerpt), toPlainText(r.ingredients)))
+        .map((r) => ({ _id: r._id, _type: "recipe" as const, title: r.title, slug: r.slug, excerpt: toPlainText(r.excerpt), image: r.image })),
       ...sampleVideos
-        .filter((v) => hit(v.title, v.description))
+        .filter((v) => hit(v.title, toPlainText(v.description)))
         .map((v) => ({ _id: v._id, _type: "video" as const, title: v.title, slug: v.slug, image: v.thumbnail ?? undefined })),
       ...samplePosts
-        .filter((p) => hit(p.title, p.excerpt))
-        .map((p) => ({ _id: p._id, _type: "post" as const, title: p.title, slug: p.slug, excerpt: p.excerpt, image: p.image })),
+        .filter((p) => hit(p.title, toPlainText(p.excerpt)))
+        .map((p) => ({ _id: p._id, _type: "post" as const, title: p.title, slug: p.slug, excerpt: toPlainText(p.excerpt), image: p.image })),
     ];
   }
 

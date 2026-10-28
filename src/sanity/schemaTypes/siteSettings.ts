@@ -1,6 +1,8 @@
 import { CogIcon } from "@sanity/icons/Cog";
 import { defineField, defineType } from "sanity";
+import { LegacyTextInput } from "../components/LegacyTextInput";
 import { imageField } from "./fields";
+import { richTextField } from "./richText";
 
 export const siteSettings = defineType({
   name: "siteSettings",
@@ -28,24 +30,22 @@ export const siteSettings = defineType({
       group: "home",
       initialValue: "Real food for every day",
     }),
-    defineField({
-      name: "heroText",
-      title: "Text under the headline",
-      type: "text",
-      rows: 3,
-      group: "home",
-    }),
+    { ...richTextField({ name: "heroText", title: "Text under the headline", withLists: false }), group: "home" },
     { ...imageField("heroImage", "Home page photo", "The large photo at the top of the home page."), group: "home" },
 
     { ...imageField("portrait", "Your photo", "A friendly photo of you for the About section."), group: "about" },
-    defineField({
-      name: "aboutShort",
-      title: "Short introduction",
-      type: "text",
-      rows: 4,
+    {
+      ...richTextField({
+        name: "aboutIntro",
+        title: "Short introduction",
+        description: "Two or three sentences shown on the home page.",
+        withLists: false,
+      }),
       group: "about",
-      description: "Two or three sentences shown on the home page.",
-    }),
+      components: { input: LegacyTextInput },
+    },
+    // Plain-text version from before the formatting toolbar; hidden, and copied into aboutIntro on request.
+    defineField({ name: "aboutShort", type: "text", hidden: true }),
     defineField({
       name: "aboutBody",
       title: "Full About page",

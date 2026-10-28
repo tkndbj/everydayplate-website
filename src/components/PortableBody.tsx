@@ -3,6 +3,7 @@ import type { SiteImage } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { getYouTubeId, isYouTubeShort } from "@/lib/youtube";
 import { Img } from "./Img";
+import { textComponents } from "./RichText";
 import { YouTubePlayer } from "./YouTubePlayer";
 
 const components: PortableTextComponents = {
@@ -32,17 +33,8 @@ const components: PortableTextComponents = {
       );
     },
   },
-  marks: {
-    link: ({ children, value }) => {
-      const href: string = value?.href ?? "#";
-      const external = /^https?:\/\//.test(href);
-      return (
-        <a href={href} {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
-          {children}
-        </a>
-      );
-    },
-  },
+  block: textComponents.block,
+  marks: textComponents.marks,
 };
 
 export function PortableBody({ value, className }: { value?: PortableTextBlock[]; className?: string }) {

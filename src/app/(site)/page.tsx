@@ -5,8 +5,10 @@ import { StoryCard } from "@/components/cards/StoryCard";
 import { VideoCard } from "@/components/cards/VideoCard";
 import { YouTubeIcon } from "@/components/icons";
 import { Img } from "@/components/Img";
+import { RichText } from "@/components/RichText";
 import { EmptyState, JsonLd, SectionHeader } from "@/components/ui";
 import { getHome } from "@/lib/data";
+import { toPlainText } from "@/lib/rich-text";
 import { site } from "@/lib/site";
 import { formatMinutes } from "@/lib/utils";
 
@@ -39,7 +41,10 @@ export default async function HomePage() {
           <h1 className="mt-4 text-[2.75rem] leading-[1.02] text-ink sm:text-6xl lg:text-7xl">
             {settings.heroTitle}
           </h1>
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted">{settings.heroText || settings.tagline}</p>
+          <RichText
+            value={toPlainText(settings.heroText) ? settings.heroText : settings.tagline}
+            className="mt-6 max-w-xl text-lg leading-relaxed text-muted"
+          />
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/recipes" className="btn btn-primary">
               Browse recipes <ArrowRight className="size-4" />
@@ -163,7 +168,7 @@ export default async function HomePage() {
       )}
 
       {/* ------------------------------------------------------------ About */}
-      {settings.aboutShort && (
+      {toPlainText(settings.aboutShort) && (
         <section className="container-page grid items-center gap-10 py-24 md:grid-cols-[0.8fr_1fr] lg:gap-20">
           <div className="relative mx-auto aspect-[4/5] w-full max-w-sm overflow-hidden rounded-[2rem] bg-sand shadow-[var(--shadow-lift)] md:max-w-none">
             <Img image={settings.portrait} sizes="(min-width: 768px) 40vw, 90vw" />
@@ -173,7 +178,7 @@ export default async function HomePage() {
             <h2 className="mt-3 text-4xl leading-tight text-ink sm:text-5xl">
               A self-taught cook from <em className="text-terracotta">Cyprus</em>
             </h2>
-            <p className="mt-6 text-lg leading-relaxed text-muted">{settings.aboutShort}</p>
+            <RichText value={settings.aboutShort} className="mt-6 text-lg leading-relaxed text-muted" />
             <Link href="/about" className="btn btn-ghost mt-8">
               Read my story <ArrowRight className="size-4" />
             </Link>

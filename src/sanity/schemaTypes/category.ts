@@ -1,6 +1,7 @@
 import { TagIcon } from "@sanity/icons/Tag";
 import { defineField, defineType } from "sanity";
 import { imageField, slugField } from "./fields";
+import { richTextField } from "./richText";
 
 export const category = defineType({
   name: "category",
@@ -16,12 +17,7 @@ export const category = defineType({
       validation: (rule) => rule.required(),
     }),
     slugField(),
-    defineField({
-      name: "description",
-      title: "Description (optional)",
-      type: "text",
-      rows: 2,
-    }),
+    richTextField({ name: "description", title: "Description (optional)" }),
     imageField("image", "Photo (optional)", "Shown on the category tile on the home page."),
     defineField({
       name: "showOnHome",

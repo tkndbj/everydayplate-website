@@ -2,6 +2,7 @@ import { ImageIcon } from "@sanity/icons/Image";
 import { PlayIcon } from "@sanity/icons/Play";
 import { defineArrayMember, defineField, defineType } from "sanity";
 import { YouTubeInput } from "../components/YouTubeInput";
+import { textBlock } from "./richText";
 
 /** Rich text used for stories, the recipe intro and the About page. */
 export const blockContent = defineType({
@@ -9,41 +10,7 @@ export const blockContent = defineType({
   title: "Text",
   type: "array",
   of: [
-    defineArrayMember({
-      type: "block",
-      styles: [
-        { title: "Normal", value: "normal" },
-        { title: "Heading", value: "h2" },
-        { title: "Small heading", value: "h3" },
-        { title: "Quote", value: "blockquote" },
-      ],
-      lists: [
-        { title: "Bullets", value: "bullet" },
-        { title: "Numbers", value: "number" },
-      ],
-      marks: {
-        decorators: [
-          { title: "Bold", value: "strong" },
-          { title: "Italic", value: "em" },
-        ],
-        annotations: [
-          defineArrayMember({
-            name: "link",
-            type: "object",
-            title: "Link",
-            fields: [
-              defineField({
-                name: "href",
-                type: "url",
-                title: "Link address",
-                validation: (rule) =>
-                  rule.uri({ allowRelative: true, scheme: ["http", "https", "mailto", "tel"] }),
-              }),
-            ],
-          }),
-        ],
-      },
-    }),
+    textBlock({ withHeadings: true }),
     defineArrayMember({
       type: "image",
       name: "image",

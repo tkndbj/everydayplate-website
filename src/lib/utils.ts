@@ -24,29 +24,6 @@ export function isoDuration(minutes?: number): string | undefined {
 
 export const difficultyLabel = { easy: "Easy", medium: "Medium", hard: "Challenging" } as const;
 
-export interface IngredientSection {
-  title?: string;
-  items: string[];
-}
-
-/** Parses the "one ingredient per line, # for headings" text into sections. */
-export function parseIngredients(text: string): IngredientSection[] {
-  const sections: IngredientSection[] = [];
-  let current: IngredientSection = { items: [] };
-  for (const raw of text.split(/\r?\n/)) {
-    const line = raw.replace(/^[\s\-•*·]+/, "").trim();
-    if (!line) continue;
-    if (raw.trim().startsWith("#")) {
-      if (current.items.length || current.title) sections.push(current);
-      current = { title: line.replace(/^#+\s*/, ""), items: [] };
-    } else {
-      current.items.push(line);
-    }
-  }
-  if (current.items.length || current.title) sections.push(current);
-  return sections;
-}
-
 export function parsePage(value: string | string[] | undefined): number {
   const n = Number(Array.isArray(value) ? value[0] : value);
   return Number.isInteger(n) && n > 0 && n < 10_000 ? n : 1;
