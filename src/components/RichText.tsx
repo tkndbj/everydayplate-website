@@ -34,7 +34,7 @@ export function RichText({ value, className }: { value?: RichTextValue | null; c
   const blocks = toBlocks(value);
   if (!blocks.length) return null;
   return (
-    <div className={cn("[&>*+*]:mt-3 [&_strong]:font-semibold [&_strong]:text-ink", className)}>
+    <div className={cn("rich-text [&>*+*]:mt-3 [&_strong]:font-semibold [&_strong]:text-ink", className)}>
       <PortableText value={blocks} components={textComponents} />
     </div>
   );

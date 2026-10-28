@@ -229,21 +229,30 @@
     font-style: italic;
     color: var(--color-ink);
   }
-  .prose-plate ul,
-  .prose-plate ol {
+  /* Lists in stories and in the short formatted texts (descriptions, summaries, tips) */
+  :is(.prose-plate, .rich-text) :is(ul, ol) {
     padding-left: 1.4rem;
   }
-  .prose-plate ul {
+  :is(.prose-plate, .rich-text) ul {
     list-style: disc;
   }
-  .prose-plate ol {
+  :is(.prose-plate, .rich-text) ol {
     list-style: decimal;
   }
-  .prose-plate li + li {
+  :is(.prose-plate, .rich-text) li :is(ul, ol) {
     margin-top: 0.4em;
   }
-  .prose-plate li::marker {
+  :is(.prose-plate, .rich-text) li ul {
+    list-style: circle;
+  }
+  :is(.prose-plate, .rich-text) li + li {
+    margin-top: 0.4em;
+  }
+  :is(.prose-plate, .rich-text) li::marker {
     color: var(--color-terracotta);
+  }
+  :is(.prose-plate, .rich-text) ol > li::marker {
+    font-weight: 600;
   }
 
   /* Horizontal scroll rails (videos) */
