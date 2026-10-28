@@ -1,5 +1,5 @@
 {
-  "name": "mujiwebsite",
+  "name": "everyday-plate",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,9 +9,17 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@sanity/icons": "^5.2.3",
+    "@sanity/image-url": "^2.1.1",
+    "@sanity/ui": "^4.4.10",
+    "lucide-react": "^1.63.0",
     "next": "16.4.3",
+    "next-sanity": "^13.4.0",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "sanity": "^6.20.0",
+    "server-only": "^0.0.1",
+    "styled-components": "^6.6.0"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
