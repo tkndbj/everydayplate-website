@@ -1,4 +1,5 @@
 import { defineArrayMember, defineField } from "sanity";
+import { CategoryPicker } from "../components/CategoryPicker";
 import { YouTubeInput } from "../components/YouTubeInput";
 import { slugify } from "../lib/slugify";
 import { richTextField } from "./richText";
@@ -47,8 +48,11 @@ export const categoriesField = defineField({
   title: "Categories",
   type: "array",
   description:
-    "Pick one or more — main categories or sub-categories (shown as “Meze › Halloumi dishes”). You can add new ones in the Categories section.",
+    "Choose a category, then a sub-category if it has any (marked ›), and click Add. Add as many as you like. You can create new ones in the Categories section.",
   of: [defineArrayMember({ type: "reference", to: [{ type: "category" }] })],
+  // Categories are added with the two-step menu below the list instead of the usual "Add item".
+  components: { input: CategoryPicker },
+  options: { disableActions: ["add", "addBefore", "addAfter", "duplicate"] },
   validation: (rule) => rule.unique(),
 });
 

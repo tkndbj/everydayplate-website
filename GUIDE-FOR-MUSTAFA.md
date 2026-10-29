@@ -56,7 +56,9 @@ Add as many as you like in **Categories**. Give each one a photo so it looks nic
 
 **Sub-categories:** create a new category as usual (e.g. "Halloumi dishes"), then in **Main category** pick the category it belongs under (e.g. "Meze"). In the list it shows as **Meze › Halloumi dishes**.
 
-To put a recipe, video or story in a sub-category, open it and pick the sub-category in its **Categories** field, just like any other category. It then shows on the sub-category's page *and* on the main category's page. On the main category's page, visitors also get buttons for each sub-category.
+To put a recipe, video or story in a category, open it and, under **Categories**, choose the category from the menu. If it has sub-categories (marked **›**), a second menu appears: pick the sub-category, or **None** to use just the main one. Click **Add**. Repeat to add more.
+
+A recipe in a sub-category shows on the sub-category's page *and* on the main category's page. On the main category's page, visitors also get buttons for each sub-category.
 
 ---
 
