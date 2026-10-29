@@ -54,7 +54,8 @@ export const category = defineType({
       title: "Show on the home page",
       type: "boolean",
       initialValue: true,
-      description: "Sub-categories are listed on their main category’s page either way.",
+      // Only main categories are shown on the home page.
+      hidden: ({ document }) => Boolean(document?.parent),
     }),
     defineField({
       name: "order",
@@ -69,7 +70,7 @@ export const category = defineType({
     prepare: ({ title, media, showOnHome, parent }) => ({
       title: parent ? `${parent} › ${title}` : title,
       media: media ?? TagIcon,
-      subtitle: [parent ? `Sub-category of ${parent}` : null, showOnHome === false ? "Hidden from home page" : null]
+      subtitle: [parent ? `Sub-category of ${parent}` : null, !parent && showOnHome === false ? "Hidden from home page" : null]
         .filter(Boolean)
         .join(" · ") || undefined,
     }),

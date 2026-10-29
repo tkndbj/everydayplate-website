@@ -168,7 +168,7 @@ export async function getHome(): Promise<HomeData> {
       shorts: videos.filter((v) => v.isShort).slice(0, 10),
       longVideos: videos.filter((v) => !v.isShort).slice(0, 2),
       posts: samplePosts.slice(0, 3),
-      categories: sampleCategories.filter((c) => c.count > 0),
+      categories: sampleCategories.filter((c) => c.count > 0 && !c.parent),
     };
   }
 

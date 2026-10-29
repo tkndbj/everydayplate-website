@@ -33,7 +33,7 @@ const SETTINGS = `*[_type == "siteSettings"][0]{
   aboutIntro, aboutShort, aboutBody[]{ ..., _type == "image" => ${IMAGE} }, youtube, instagram, tiktok, facebook, email
 }`;
 
-const CATEGORY_LIST = `*[_type == "category" && defined(slug.current) && ($homeOnly == false || showOnHome != false)]
+const CATEGORY_LIST = `*[_type == "category" && defined(slug.current) && ($homeOnly == false || (showOnHome != false && !defined(parent)))]
   | order(coalesce(order, 999) asc, title asc){
     ${CATEGORY_REF}, description, "image": image${IMAGE},
     "count": count(*[_type in ["recipe", "video", "post"] && ${PUBLISHED} && ${IN_CATEGORY}])
