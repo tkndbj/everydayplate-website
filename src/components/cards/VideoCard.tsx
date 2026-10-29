@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import type { VideoCard as VideoCardData } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Img } from "../Img";
+import { useStopWhenHidden } from "../useStopWhenHidden";
 
 interface Props {
   video: VideoCardData;
@@ -23,6 +24,7 @@ const PLAY_EVENT = "everyday-plate:video-play";
 export function VideoCard({ video, className, sizes }: Props) {
   const short = video.isShort;
   const [playing, setPlaying] = useState(false);
+  const iframe = useStopWhenHidden(setPlaying);
 
   useEffect(() => {
     if (!playing) return;
@@ -48,6 +50,7 @@ export function VideoCard({ video, className, sizes }: Props) {
       <article className={cn("relative", className)}>
         <div className={frame}>
           <iframe
+            ref={iframe}
             src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`}
             title={video.title}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"

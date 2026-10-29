@@ -5,6 +5,7 @@ import { Play } from "lucide-react";
 import { useState } from "react";
 import { youTubeThumbnail } from "@/lib/youtube";
 import { cn } from "@/lib/utils";
+import { useStopWhenHidden } from "./useStopWhenHidden";
 
 interface Props {
   id: string | null;
@@ -20,6 +21,7 @@ interface Props {
  */
 export function YouTubePlayer({ id, title, short, className }: Props) {
   const [playing, setPlaying] = useState(false);
+  const iframe = useStopWhenHidden(setPlaying);
   // Not every video has a max-resolution thumbnail; fall back to the standard one.
   const [hiRes, setHiRes] = useState(!short);
   const frame = cn(
@@ -40,6 +42,7 @@ export function YouTubePlayer({ id, title, short, className }: Props) {
     return (
       <div className={frame}>
         <iframe
+          ref={iframe}
           src={`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1&playsinline=1`}
           title={title}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
