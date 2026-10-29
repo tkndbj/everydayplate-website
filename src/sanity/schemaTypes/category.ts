@@ -1,10 +1,17 @@
 import { TagIcon } from "@sanity/icons/Tag";
-import { defineField, defineType } from "sanity";
+import { defineField, defineType, type SlugSourceFn } from "sanity";
 import { apiVersion } from "../env";
-import { imageField, slugField } from "./fields";
+import { imageField, publishedId, slugField } from "./fields";
 import { richTextField } from "./richText";
 
-const publishedId = (id: string) => id.replace(/^drafts\./, "");
+/** Sub-categories include their main category in the web address: "Meat" under "Turkish Cuisine" → turkish-cuisine-meat. */
+const slugSource: SlugSourceFn = async (doc, { getClient }) => {
+  const parentId = (doc.parent as { _ref?: string } | undefined)?._ref;
+  const title = (doc.title as string | undefined) ?? "";
+  if (!parentId) return title;
+  const parentTitle = await getClient({ apiVersion }).fetch<string | null>(`*[_id == $id][0].title`, { id: parentId });
+  return parentTitle ? `${parentTitle} ${title}` : title;
+};
 
 export const category = defineType({
   name: "category",
@@ -19,7 +26,6 @@ export const category = defineType({
       description: "e.g. Cypriot Classics, Meze, Desserts, Quick Dinners",
       validation: (rule) => rule.required(),
     }),
-    slugField(),
     defineField({
       name: "parent",
       title: "Main category (only for sub-categories)",
@@ -47,6 +53,11 @@ export const category = defineType({
             : true;
         }),
     }),
+    {
+      ...slugField(slugSource),
+      description:
+        'Click "Generate" to create it from the name. For a sub-category, pick the main category first so it’s included (e.g. turkish-cuisine-meat).',
+    },
     richTextField({ name: "description", title: "Description (optional)" }),
     imageField("image", "Photo (optional)", "Shown on the category tile on the home page."),
     defineField({

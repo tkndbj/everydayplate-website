@@ -3,8 +3,10 @@ import { DocumentTextIcon } from "@sanity/icons/DocumentText";
 import { LemonIcon } from "@sanity/icons/Lemon";
 import { PlayIcon } from "@sanity/icons/Play";
 import { StarIcon } from "@sanity/icons/Star";
+import { AddIcon } from "@sanity/icons/Add";
 import { TagIcon } from "@sanity/icons/Tag";
 import type { StructureResolver } from "sanity/structure";
+import { CategoryTree } from "./components/CategoryTree";
 
 /** The left-hand menu in the admin panel. Kept short and in plain language on purpose. */
 export const structure: StructureResolver = (S) =>
@@ -50,12 +52,18 @@ export const structure: StructureResolver = (S) =>
         .title("Categories")
         .icon(TagIcon)
         .child(
-          S.documentTypeList("category")
+          // Main categories with their sub-categories folded underneath.
+          S.component(CategoryTree)
+            .id("categories")
             .title("Categories")
-            .defaultOrdering([
-              { field: "order", direction: "asc" },
-              { field: "title", direction: "asc" },
-            ]),
+            .menuItems([
+              S.menuItem()
+                .title("New category")
+                .icon(AddIcon)
+                .intent({ type: "create", params: { type: "category" } })
+                .showAsAction(true),
+            ])
+            .child((id) => S.document().schemaType("category").documentId(id)),
         ),
       S.divider(),
       S.listItem()

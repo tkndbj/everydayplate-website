@@ -1,18 +1,41 @@
-import { defineArrayMember, defineField } from "sanity";
+import { defineArrayMember, defineField, type SlugifierFn, type SlugSourceFn } from "sanity";
 import { CategoryPicker } from "../components/CategoryPicker";
 import { YouTubeInput } from "../components/YouTubeInput";
+import { apiVersion } from "../env";
 import { slugify } from "../lib/slugify";
 import { richTextField } from "./richText";
 
 /** Shared field builders so every content type behaves the same way in the admin. */
 
-export const slugField = (source = "title") =>
+/** "drafts.abc" / "versions.r1.abc" → "abc" */
+export const publishedId = (id: string) => id.replace(/^(drafts|versions\.[^.]+)\./, "");
+
+/**
+ * "Generate" turns the title into a web address, and if another item of the
+ * same kind already uses it, adds -2, -3… so it's always free.
+ */
+const uniqueSlugify: SlugifierFn = async (input, _schemaType, context) => {
+  const base = slugify(input).slice(0, 90);
+  const doc = context.parent as { _id?: string; _type?: string };
+  if (!base || !doc?._id || !doc._type) return base;
+  const taken = new Set(
+    await context.getClient({ apiVersion }).fetch<string[]>(
+      `*[_type == $type && string::startsWith(slug.current, $base) && !sanity::versionOf($id)].slug.current`,
+      { type: doc._type, base, id: publishedId(doc._id) },
+    ),
+  );
+  let slug = base;
+  for (let n = 2; taken.has(slug); n++) slug = `${base}-${n}`;
+  return slug;
+};
+
+export const slugField = (source: string | SlugSourceFn = "title") =>
   defineField({
     name: "slug",
     title: "Web address",
     type: "slug",
     description: 'Click "Generate" to create it from the title. This becomes the page link.',
-    options: { source, maxLength: 96, slugify },
+    options: { source, maxLength: 96, slugify: uniqueSlugify },
     validation: (rule) => rule.required().error("Click “Generate” to create the web address."),
   });
 
