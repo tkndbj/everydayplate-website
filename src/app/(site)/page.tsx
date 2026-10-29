@@ -112,9 +112,11 @@ export default async function HomePage() {
                   <p className="mt-3 font-serif text-lg leading-tight text-ink group-hover:text-terracotta-dark">
                     {c.title}
                   </p>
-                  <p className="mt-0.5 text-xs text-muted">
-                    {c.count} {c.count === 1 ? "post" : "posts"}
-                  </p>
+                  {c.recipeCount > 0 && (
+                    <p className="mt-0.5 text-xs text-muted">
+                      {c.recipeCount} {c.recipeCount === 1 ? "recipe" : "recipes"}
+                    </p>
+                  )}
                 </Link>
               </li>
             ))}

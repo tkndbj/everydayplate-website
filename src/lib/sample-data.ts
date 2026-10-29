@@ -340,4 +340,5 @@ export const sampleCategories: Category[] = (
   count: [...sampleRecipes, ...sampleVideos, ...samplePosts].filter((item) =>
     item.categories.some((c) => c.slug === ref.slug),
   ).length,
+  recipeCount: sampleRecipes.filter((item) => item.categories.some((c) => c.slug === ref.slug)).length,
 }));

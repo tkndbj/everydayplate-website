@@ -72,7 +72,8 @@ async function CategoryContent({ params }: Pick<PageProps<"/categories/[slug]">,
         <nav aria-label="Sub-categories" className="container-page -mt-2 mb-14 flex flex-wrap gap-2">
           {subCategories.map((c) => (
             <Link key={c.slug} href={`/categories/${c.slug}`} className="chip">
-              {c.title} <span className="text-muted">{c.count}</span>
+              {c.title}
+              {c.recipeCount > 0 && <span className="text-muted">{c.recipeCount}</span>}
             </Link>
           ))}
         </nav>

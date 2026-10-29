@@ -39,7 +39,7 @@ async function RecipeResults({ searchParams }: Pick<PageProps<"/recipes">, "sear
   const page = parsePage(params.page);
   const category = firstParam(params.category);
   const [{ items, pageCount, total }, categories] = await Promise.all([getRecipes(page, category), getCategories()]);
-  const used = categories.filter((c) => c.count > 0);
+  const used = categories.filter((c) => c.recipeCount > 0);
   const active = used.find((c) => c.slug === category);
   const main = used.filter((c) => !c.parent);
   // Once a main category (or one of its sub-categories) is picked, its sub-categories show as a second row.

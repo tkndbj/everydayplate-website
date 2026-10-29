@@ -22,7 +22,10 @@ export interface CategoryRef {
 export interface Category extends CategoryRef {
   description?: RichText;
   image?: SiteImage;
+  /** Recipes, videos and stories together; categories with nothing in them are hidden. */
   count: number;
+  /** Recipes only, the number shown to visitors. */
+  recipeCount: number;
 }
 
 export type Difficulty = "easy" | "medium" | "hard";

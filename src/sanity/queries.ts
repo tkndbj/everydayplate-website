@@ -36,7 +36,8 @@ const SETTINGS = `*[_type == "siteSettings"][0]{
 const CATEGORY_LIST = `*[_type == "category" && defined(slug.current) && ($homeOnly == false || (showOnHome != false && !defined(parent)))]
   | order(coalesce(order, 999) asc, title asc){
     ${CATEGORY_REF}, description, "image": image${IMAGE},
-    "count": count(*[_type in ["recipe", "video", "post"] && ${PUBLISHED} && ${IN_CATEGORY}])
+    "count": count(*[_type in ["recipe", "video", "post"] && ${PUBLISHED} && ${IN_CATEGORY}]),
+    "recipeCount": count(*[_type == "recipe" && ${PUBLISHED} && ${IN_CATEGORY}])
   }`;
 
 /* Queries */
@@ -104,7 +105,8 @@ export const categoryPageQuery = defineQuery(`*[_type == "category" && slug.curr
   "children": *[_type == "category" && parent._ref == ^._id && defined(slug.current)]
     | order(coalesce(order, 999) asc, title asc){
       ${CATEGORY_REF}, description, "image": image${IMAGE},
-      "count": count(*[_type in ["recipe", "video", "post"] && ${PUBLISHED} && references(^._id)])
+      "count": count(*[_type in ["recipe", "video", "post"] && ${PUBLISHED} && references(^._id)]),
+      "recipeCount": count(*[_type == "recipe" && ${PUBLISHED} && references(^._id)])
     },
   "recipes": *[_type == "recipe" && ${PUBLISHED} && ${IN_CATEGORY}] | order(publishedAt desc)[0...24]${RECIPE_CARD},
   "videos": *[_type == "video" && ${PUBLISHED} && ${IN_CATEGORY}] | order(publishedAt desc)[0...12]${VIDEO_CARD},
