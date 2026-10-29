@@ -12,7 +12,7 @@ import { ShareActions } from "@/components/recipe/ShareActions";
 import { JsonLd, SectionHeader } from "@/components/ui";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
 import { getRecipe, getSlugs } from "@/lib/data";
-import { blockText, ingredientSections, toBlocks, toPlainText } from "@/lib/rich-text";
+import { blockText, ingredientSections, methodSections, toBlocks, toPlainText } from "@/lib/rich-text";
 import { site } from "@/lib/site";
 import {
   difficultyLabel,
@@ -62,9 +62,14 @@ async function RecipeContent({ params }: Pick<PageProps<"/recipes/[slug]">, "par
 
   const total = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
   const sections = ingredientSections(recipe.ingredients);
-  const steps = toBlocks(recipe.steps);
+  const method = methodSections(recipe.steps);
+  const steps = method.flatMap((section) => section.steps);
   const excerpt = toPlainText(recipe.excerpt);
-  const videoId = getYouTubeId(recipe.youtubeUrl);
+  // The main video first, then any extra ones; links YouTube can't read are skipped.
+  const videos = [recipe.youtubeUrl, ...(recipe.moreVideos ?? [])]
+    .map((url) => ({ url, id: getYouTubeId(url) }))
+    .filter((v): v is { url: string; id: string } => Boolean(v.id));
+  const [mainVideo, ...moreVideos] = videos;
 
   const facts = [
     recipe.prepTime && { icon: ChefHat, label: "Prep", value: formatMinutes(recipe.prepTime) },
@@ -91,21 +96,21 @@ async function RecipeContent({ params }: Pick<PageProps<"/recipes/[slug]">, "par
           recipeYield: recipe.servings ? `${recipe.servings} servings` : undefined,
           recipeCategory: recipe.categories[0]?.title,
           recipeCuisine: "Cypriot",
-          recipeIngredient: sections.flatMap((s) => s.items.map(blockText)),
+          recipeIngredient: sections.flatMap((s) => s.items.map((item) => blockText(item.block))),
           recipeInstructions: steps.map((step, i) => ({
             "@type": "HowToStep",
             position: i + 1,
-            text: blockText(step),
+            text: step.map(blockText).join(" "),
           })),
-          video: videoId
-            ? {
+          video: videos.length
+            ? videos.map(({ id }) => ({
                 "@type": "VideoObject",
                 name: recipe.title,
                 description: excerpt || recipe.title,
-                thumbnailUrl: youTubeThumbnail(videoId),
-                embedUrl: `https://www.youtube.com/embed/${videoId}`,
+                thumbnailUrl: youTubeThumbnail(id),
+                embedUrl: `https://www.youtube.com/embed/${id}`,
                 uploadDate: recipe.publishedAt,
-              }
+              }))
             : undefined,
         }}
       />
@@ -117,6 +122,14 @@ async function RecipeContent({ params }: Pick<PageProps<"/recipes/[slug]">, "par
             <Link href="/recipes" className="hover:text-terracotta">
               Recipes
             </Link>
+            {recipe.categories[0]?.parent && (
+              <>
+                <span className="mx-2">/</span>
+                <Link href={`/categories/${recipe.categories[0].parent.slug}`} className="hover:text-terracotta">
+                  {recipe.categories[0].parent.title}
+                </Link>
+              </>
+            )}
             {recipe.categories[0] && (
               <>
                 <span className="mx-2">/</span>
@@ -174,7 +187,11 @@ async function RecipeContent({ params }: Pick<PageProps<"/recipes/[slug]">, "par
               <IngredientList
                 sections={sections.map((s) => ({
                   title: s.title && <InlineText block={s.title} />,
-                  items: s.items.map((item) => <InlineText key={item._key} block={item} />),
+                  items: s.items.map((item) => ({
+                    content: <InlineText block={item.block} />,
+                    number: item.number,
+                    indent: item.indent,
+                  })),
                 }))}
               />
             </div>
@@ -182,23 +199,50 @@ async function RecipeContent({ params }: Pick<PageProps<"/recipes/[slug]">, "par
         </aside>
 
         <div>
-          {videoId && (
-            <div className="no-print mb-12">
-              <YouTubePlayer id={videoId} title={recipe.title} short={isYouTubeShort(recipe.youtubeUrl)} />
+          {mainVideo && (
+            <div className="no-print mb-12 space-y-6">
+              <YouTubePlayer id={mainVideo.id} title={recipe.title} short={isYouTubeShort(mainVideo.url)} />
+              {moreVideos.length > 0 && (
+                <div className="grid items-start gap-6 sm:grid-cols-2">
+                  {moreVideos.map((v, i) => (
+                    <YouTubePlayer
+                      key={v.id}
+                      id={v.id}
+                      title={`${recipe.title} – video ${i + 2}`}
+                      short={isYouTubeShort(v.url)}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
           <h2 className="text-3xl text-ink">Method</h2>
-          <ol className="mt-8 space-y-8">
-            {steps.map((step, i) => (
-              <li key={step._key ?? i} className="grid grid-cols-[2.75rem_1fr] gap-4">
-                <span className="grid size-11 place-items-center rounded-full bg-terracotta-soft font-serif text-lg font-semibold text-terracotta-dark">
-                  {i + 1}
-                </span>
-                <RichText value={[step]} className="pt-2 text-[1.0625rem] leading-relaxed text-ink-soft" />
-              </li>
-            ))}
-          </ol>
+          <div className="mt-8 space-y-10">
+            {method.map((section, s) => {
+              // Step numbers carry on from one heading to the next.
+              const first = method.slice(0, s).reduce((n, prev) => n + prev.steps.length, 1);
+              return (
+                <section key={s}>
+                  {section.title && (
+                    <h3 className="mb-6 font-sans text-xs font-semibold uppercase tracking-[0.16em] text-olive">
+                      <InlineText block={section.title} />
+                    </h3>
+                  )}
+                  <ol start={first} className="space-y-8">
+                    {section.steps.map((step, i) => (
+                      <li key={step[0]._key ?? i} className="grid grid-cols-[2.75rem_1fr] gap-4">
+                        <span className="grid size-11 place-items-center rounded-full bg-terracotta-soft font-serif text-lg font-semibold text-terracotta-dark">
+                          {first + i}
+                        </span>
+                        <RichText value={step} className="pt-2 text-[1.0625rem] leading-relaxed text-ink-soft" />
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+              );
+            })}
+          </div>
 
           {toBlocks(recipe.tips).length > 0 && (
             <div className="mt-12 rounded-[var(--radius-card)] bg-olive-soft/70 p-6 sm:p-8">

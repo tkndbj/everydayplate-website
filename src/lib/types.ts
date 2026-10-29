@@ -15,6 +15,8 @@ export interface SiteImage {
 export interface CategoryRef {
   title: string;
   slug: string;
+  /** Set for sub-categories. */
+  parent?: { title: string; slug: string } | null;
 }
 
 export interface Category extends CategoryRef {
@@ -45,6 +47,7 @@ export interface Recipe extends RecipeCard {
   steps: RichText;
   tips?: RichText;
   youtubeUrl?: string;
+  moreVideos?: string[];
   intro?: PortableTextBlock[];
   updatedAt: string;
 }

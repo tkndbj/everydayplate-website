@@ -4,8 +4,15 @@ import { Check } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
+interface Item {
+  content: ReactNode;
+  /** Shown before the text for numbered ingredients, e.g. "1." */
+  number?: string;
+  indent?: number;
+}
+
 /** Ingredients the cook can tick off while shopping or cooking. */
-export function IngredientList({ sections }: { sections: { title?: ReactNode; items: ReactNode[] }[] }) {
+export function IngredientList({ sections }: { sections: { title?: ReactNode; items: Item[] }[] }) {
   const [checked, setChecked] = useState<Set<string>>(new Set());
 
   const toggle = (key: string) =>
@@ -30,7 +37,7 @@ export function IngredientList({ sections }: { sections: { title?: ReactNode; it
               const key = `${s}-${i}`;
               const done = checked.has(key);
               return (
-                <li key={key}>
+                <li key={key} style={item.indent ? { paddingLeft: `${item.indent * 1.5}rem` } : undefined}>
                   <button
                     type="button"
                     onClick={() => toggle(key)}
@@ -46,7 +53,8 @@ export function IngredientList({ sections }: { sections: { title?: ReactNode; it
                       {done && <Check className="size-3.5" strokeWidth={3} />}
                     </span>
                     <span className={cn("leading-snug transition", done ? "text-muted line-through" : "text-ink-soft")}>
-                      {item}
+                      {item.number && <span className="mr-1.5 font-semibold text-terracotta">{item.number}</span>}
+                      {item.content}
                     </span>
                   </button>
                 </li>

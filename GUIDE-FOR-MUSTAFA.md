@@ -31,8 +31,9 @@ There's also a small **"Kitchen login"** link at the bottom of every page.
    - After uploading a photo, you can drag the circle onto the most important part of the dish. The site will always keep that part in view.
 3. Tab **2. Ingredients & method**
    - **Ingredients:** one per line (press Enter for the next one). For a small heading like "For the sauce", put the cursor on that line and choose **Heading** in the text style menu.
-   - **Method:** one paragraph per step (press Enter for the next step). The website numbers the steps for you.
-4. Tab **3. Extras** (optional): a YouTube link, the story behind the dish, and **Feature on the home page**.
+   - **Method:** one paragraph per step (press Enter for the next step). The website numbers the steps for you. Headings like "Make the sauce" work the same way as in Ingredients. Bullet or numbered lines written right under a step are shown as part of that step.
+   - **Ingredients, Method and Chef's tips** all have **bullet** and **numbered list** buttons in the toolbar.
+4. Tab **3. Extras** (optional): a main YouTube video, **More videos** (click **Add item** for each extra link), the story behind the dish, and **Feature on the home page**.
 5. Click the green **Publish** button at the bottom right. ✅
 
 It's on the website within a minute.
@@ -52,6 +53,10 @@ It's on the website within a minute.
 ## 🏷️ Categories
 
 Add as many as you like in **Categories**. Give each one a photo so it looks nice on the home page. Use **Position** (1, 2, 3…) to choose the order.
+
+**Sub-categories:** create a new category as usual (e.g. "Halloumi dishes"), then in **Main category** pick the category it belongs under (e.g. "Meze"). In the list it shows as **Meze › Halloumi dishes**.
+
+To put a recipe, video or story in a sub-category, open it and pick the sub-category in its **Categories** field, just like any other category. It then shows on the sub-category's page *and* on the main category's page. On the main category's page, visitors also get buttons for each sub-category.
 
 ---
 

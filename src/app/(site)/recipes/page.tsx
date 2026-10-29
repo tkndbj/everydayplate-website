@@ -41,6 +41,10 @@ async function RecipeResults({ searchParams }: Pick<PageProps<"/recipes">, "sear
   const [{ items, pageCount, total }, categories] = await Promise.all([getRecipes(page, category), getCategories()]);
   const used = categories.filter((c) => c.count > 0);
   const active = used.find((c) => c.slug === category);
+  const main = used.filter((c) => !c.parent);
+  // Once a main category (or one of its sub-categories) is picked, its sub-categories show as a second row.
+  const openSlug = active?.parent?.slug ?? active?.slug;
+  const subs = openSlug ? used.filter((c) => c.parent?.slug === openSlug) : [];
 
   return (
     <>
@@ -49,11 +53,29 @@ async function RecipeResults({ searchParams }: Pick<PageProps<"/recipes">, "sear
           <Link href="/recipes" className="chip" aria-current={!category ? "page" : undefined}>
             All
           </Link>
-          {used.map((c) => (
+          {main.map((c) => (
             <Link
               key={c.slug}
               href={`/recipes?category=${c.slug}`}
               className="chip"
+              aria-current={c.slug === openSlug ? "page" : undefined}
+            >
+              {c.title}
+            </Link>
+          ))}
+        </nav>
+      )}
+
+      {subs.length > 0 && (
+        <nav
+          aria-label="Filter by sub-category"
+          className="rail -mx-4 -mt-6 mb-10 auto-cols-max px-4 sm:mx-0 sm:flex sm:flex-wrap sm:gap-2 sm:px-0"
+        >
+          {subs.map((c) => (
+            <Link
+              key={c.slug}
+              href={`/recipes?category=${c.slug}`}
+              className="chip text-sm"
               aria-current={c.slug === category ? "page" : undefined}
             >
               {c.title}

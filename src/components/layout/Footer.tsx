@@ -7,7 +7,7 @@ import { SocialLinks } from "../SocialLinks";
 
 export async function Footer() {
   const [settings, categories] = await Promise.all([getSettings(), getCategories()]);
-  const topCategories = categories.filter((c) => c.count > 0).slice(0, 6);
+  const topCategories = categories.filter((c) => c.count > 0 && !c.parent).slice(0, 6);
 
   return (
     <footer className="mt-24 bg-ink text-paper/80">

@@ -44,7 +44,7 @@ export function RichText({ value, className }: { value?: RichTextValue | null; c
 export function InlineText({ block }: { block: PortableTextBlock }) {
   return (
     <PortableText
-      value={[{ ...block, style: "inline" } as PortableTextBlock]}
+      value={[{ ...block, style: "inline", listItem: undefined, level: undefined } as PortableTextBlock]}
       components={{ ...textComponents, block: { inline: ({ children }) => <>{children}</> } }}
     />
   );

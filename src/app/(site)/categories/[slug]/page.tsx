@@ -46,15 +46,37 @@ async function CategoryContent({ params }: Pick<PageProps<"/categories/[slug]">,
   const { slug } = await params;
   const category = await getCategoryPage(slug);
   if (!category) notFound();
-  const { recipes, videos, posts, recipeTotal } = category;
+  const { recipes, videos, posts, recipeTotal, parent, children } = category;
+  const subCategories = children.filter((c) => c.count > 0);
   const shorts = videos.filter((v) => v.isShort);
   const long = videos.filter((v) => !v.isShort);
 
   return (
     <>
-      <PageIntro eyebrow="Category" title={category.title}>
+      <PageIntro
+        eyebrow={
+          parent ? (
+            <Link href={`/categories/${parent.slug}`} className="hover:text-terracotta">
+              {parent.title}
+            </Link>
+          ) : (
+            "Category"
+          )
+        }
+        title={category.title}
+      >
         <RichText value={category.description} />
       </PageIntro>
+
+      {subCategories.length > 0 && (
+        <nav aria-label="Sub-categories" className="container-page -mt-2 mb-14 flex flex-wrap gap-2">
+          {subCategories.map((c) => (
+            <Link key={c.slug} href={`/categories/${c.slug}`} className="chip">
+              {c.title} <span className="text-muted">{c.count}</span>
+            </Link>
+          ))}
+        </nav>
+      )}
 
       <div className="container-page space-y-20">
         {!recipes.length && !videos.length && !posts.length && (

@@ -39,26 +39,74 @@ export function toPlainText(value?: RichText | null): string {
   return toBlocks(value).map(blockText).join(" ").replace(/\s+/g, " ").trim();
 }
 
+export interface IngredientItem {
+  block: PortableTextBlock;
+  /** "1." for numbered ingredients. */
+  number?: string;
+  /** 0 for a normal line, 1+ for nested bullets. */
+  indent: number;
+}
+
 export interface IngredientSection {
   title?: PortableTextBlock;
-  items: PortableTextBlock[];
+  items: IngredientItem[];
 }
+
+const isHeading = (block: PortableTextBlock) =>
+  ((block as TextBlock).style ?? "").startsWith("h") || blockText(block).trim().startsWith("#");
+
+const headingBlock = (block: PortableTextBlock) => (blockText(block).trim().startsWith("#") ? stripHash(block) : block);
 
 /** Splits the ingredient list into sections at each heading line (or a line starting with #). */
 export function ingredientSections(value?: RichText | null): IngredientSection[] {
   const sections: IngredientSection[] = [];
   let current: IngredientSection = { items: [] };
+  const counters: number[] = [];
   for (const block of toBlocks(value)) {
-    const text = blockText(block).trim();
-    const style = (block as TextBlock).style ?? "";
-    if (style.startsWith("h") || text.startsWith("#")) {
+    const { listItem, level = 1 } = block as TextBlock & { listItem?: string; level?: number };
+    if (isHeading(block)) {
       if (current.items.length || current.title) sections.push(current);
-      current = { title: text.startsWith("#") ? stripHash(block) : block, items: [] };
-    } else {
-      current.items.push(text.match(/^[-•*·]\s/) ? stripBullet(block) : block);
+      current = { title: headingBlock(block), items: [] };
+      counters.length = 0;
+      continue;
     }
+    // Numbering runs per list level and restarts after a heading, a plain line or a bullet.
+    counters.length = listItem ? level : 0;
+    if (listItem) counters[level - 1] = listItem === "number" ? (counters[level - 1] ?? 0) + 1 : 0;
+    const number = listItem === "number" ? `${counters[level - 1]}.` : undefined;
+    current.items.push({
+      block: blockText(block).match(/^\s*[-•*·]\s/) ? stripBullet(block) : block,
+      number,
+      indent: listItem ? level - 1 : 0,
+    });
   }
   if (current.items.length || current.title) sections.push(current);
+  return sections;
+}
+
+export interface MethodSection {
+  title?: PortableTextBlock;
+  /** Each step is its paragraph plus any bullet or numbered lines written right under it. */
+  steps: PortableTextBlock[][];
+}
+
+/** Splits the method into numbered steps, grouped under any headings (or lines starting with #). */
+export function methodSections(value?: RichText | null): MethodSection[] {
+  const sections: MethodSection[] = [];
+  let current: MethodSection = { steps: [] };
+  let previous: PortableTextBlock | undefined;
+  for (const block of toBlocks(value)) {
+    if (isHeading(block)) {
+      if (current.steps.length || current.title) sections.push(current);
+      current = { title: headingBlock(block), steps: [] };
+    } else if ((block as { listItem?: string }).listItem && previous && !isHeading(previous) && current.steps.length) {
+      current.steps[current.steps.length - 1].push(block);
+    } else {
+      current.steps.push([block]);
+    }
+    previous = block;
+  }
+  if (current.steps.length || current.title) sections.push(current);
   return sections;
 }
 

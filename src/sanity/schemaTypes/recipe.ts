@@ -7,6 +7,7 @@ import {
   publishedAtField,
   slugField,
   youtubeUrlField,
+  youtubeUrlsField,
 } from "./fields";
 import { richTextField, textBlock } from "./richText";
 
@@ -77,10 +78,9 @@ export const recipe = defineType({
       type: "array",
       group: "cooking",
       description:
-        "One ingredient per line (press Enter for the next one). For a small heading like “For the sauce”, choose “Heading” in the text style menu.",
+        "One ingredient per line (press Enter for the next one). For a small heading like “For the sauce”, choose “Heading” in the text style menu. Bullets and numbers are in the toolbar.",
       of: [
         textBlock({
-          withLists: false,
           styles: [
             { title: "Ingredient", value: "normal" },
             { title: "Heading", value: "h3" },
@@ -94,21 +94,38 @@ export const recipe = defineType({
       title: "Method",
       type: "array",
       group: "cooking",
-      description: "One paragraph per step (press Enter for the next step). Steps are numbered automatically.",
-      of: [textBlock({ withLists: false })],
+      description:
+        "One paragraph per step (press Enter for the next step). Steps are numbered automatically. For a small heading like “Make the sauce”, choose “Heading” in the text style menu. Bullets or numbers right under a step are shown as part of that step.",
+      of: [
+        textBlock({
+          styles: [
+            { title: "Step", value: "normal" },
+            { title: "Centred text", value: "center" },
+            { title: "Right-aligned text", value: "right" },
+            { title: "Heading", value: "h3" },
+          ],
+        }),
+      ],
       validation: (rule) => rule.required().error("Add at least one step."),
     }),
     {
       ...richTextField({
         name: "tips",
         title: "Chef’s tips (optional)",
-        description: "Little secrets, swaps or storage advice. One tip per paragraph.",
-        withLists: false,
+        description: "Little secrets, swaps or storage advice. One tip per paragraph, or use bullets or numbers from the toolbar.",
       }),
       group: "cooking",
     },
 
-    { ...youtubeUrlField(), title: "Recipe video (optional)", group: "extras" },
+    { ...youtubeUrlField(), title: "Main recipe video (optional)", group: "extras" },
+    {
+      ...youtubeUrlsField(
+        "moreVideos",
+        "More videos (optional)",
+        "Extra YouTube links for this recipe (a Short, a side dish, a technique…). Click “Add item” for each one; drag to change the order. They’re shown under the main video.",
+      ),
+      group: "extras",
+    },
     defineField({
       name: "intro",
       title: "The story behind this dish (optional)",

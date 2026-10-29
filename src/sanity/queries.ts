@@ -3,13 +3,18 @@ import { defineQuery } from "next-sanity";
 /* Reusable projections */
 
 const IMAGE = `{ alt, caption, hotspot, crop, asset->{ _id, url, metadata{ lqip, dimensions{ width, height } } } }`;
-const CATEGORIES = `"categories": coalesce(categories[]->{ title, "slug": slug.current }, [])`;
+const CATEGORY_REF = `title, "slug": slug.current, "parent": parent->{ title, "slug": slug.current }`;
+const CATEGORIES = `"categories": coalesce(categories[]->{ ${CATEGORY_REF} }, [])`;
 const PUBLISHED = `defined(slug.current) && defined(publishedAt)`;
+/** Tagged with the category itself or one of its sub-categories (inside a category projection). */
+const IN_CATEGORY = `(references(^._id) || ^._id in categories[]->parent._ref)`;
+/** Same, for a category given by its slug. */
+const IN_CATEGORY_SLUG = `($category in categories[]->slug.current || $category in categories[]->parent->slug.current)`;
 
 const RECIPE_FIELDS = `
   _id, title, "slug": slug.current, excerpt, "image": mainImage${IMAGE},
   prepTime, cookTime, difficulty, publishedAt, ${CATEGORIES},
-  "hasVideo": defined(youtubeUrl)
+  "hasVideo": defined(youtubeUrl) || count(moreVideos) > 0
 `;
 const RECIPE_CARD = `{${RECIPE_FIELDS}}`;
 
@@ -30,8 +35,8 @@ const SETTINGS = `*[_type == "siteSettings"][0]{
 
 const CATEGORY_LIST = `*[_type == "category" && defined(slug.current) && ($homeOnly == false || showOnHome != false)]
   | order(coalesce(order, 999) asc, title asc){
-    title, "slug": slug.current, description, "image": image${IMAGE},
-    "count": count(*[_type in ["recipe", "video", "post"] && ${PUBLISHED} && references(^._id)])
+    ${CATEGORY_REF}, description, "image": image${IMAGE},
+    "count": count(*[_type in ["recipe", "video", "post"] && ${PUBLISHED} && ${IN_CATEGORY}])
   }`;
 
 /* Queries */
@@ -50,14 +55,14 @@ export const homeQuery = defineQuery(`{
 export const categoriesQuery = defineQuery(CATEGORY_LIST);
 
 export const recipesQuery = defineQuery(`{
-  "items": *[_type == "recipe" && ${PUBLISHED} && ($category == "" || $category in categories[]->slug.current)]
+  "items": *[_type == "recipe" && ${PUBLISHED} && ($category == "" || ${IN_CATEGORY_SLUG})]
     | order(publishedAt desc)[$start...$end]${RECIPE_CARD},
-  "total": count(*[_type == "recipe" && ${PUBLISHED} && ($category == "" || $category in categories[]->slug.current)])
+  "total": count(*[_type == "recipe" && ${PUBLISHED} && ($category == "" || ${IN_CATEGORY_SLUG})])
 }`);
 
 export const recipeQuery = defineQuery(`*[_type == "recipe" && slug.current == $slug && defined(publishedAt)][0]{
   ${RECIPE_FIELDS}, "categoryIds": coalesce(categories[]._ref, []),
-  servings, ingredients, steps, tips, youtubeUrl, "updatedAt": _updatedAt,
+  servings, ingredients, steps, tips, youtubeUrl, moreVideos, "updatedAt": _updatedAt,
   intro[]{ ..., _type == "image" => ${IMAGE} }
 }`);
 
@@ -95,11 +100,16 @@ export const morePostsQuery = defineQuery(`*[_type == "post" && ${PUBLISHED} && 
   | order(publishedAt desc)[0...3]${POST_CARD}`);
 
 export const categoryPageQuery = defineQuery(`*[_type == "category" && slug.current == $slug][0]{
-  title, "slug": slug.current, description, "image": image${IMAGE},
-  "recipes": *[_type == "recipe" && ${PUBLISHED} && references(^._id)] | order(publishedAt desc)[0...24]${RECIPE_CARD},
-  "videos": *[_type == "video" && ${PUBLISHED} && references(^._id)] | order(publishedAt desc)[0...12]${VIDEO_CARD},
-  "posts": *[_type == "post" && ${PUBLISHED} && references(^._id)] | order(publishedAt desc)[0...6]${POST_CARD},
-  "recipeTotal": count(*[_type == "recipe" && ${PUBLISHED} && references(^._id)])
+  ${CATEGORY_REF}, description, "image": image${IMAGE},
+  "children": *[_type == "category" && parent._ref == ^._id && defined(slug.current)]
+    | order(coalesce(order, 999) asc, title asc){
+      ${CATEGORY_REF}, description, "image": image${IMAGE},
+      "count": count(*[_type in ["recipe", "video", "post"] && ${PUBLISHED} && references(^._id)])
+    },
+  "recipes": *[_type == "recipe" && ${PUBLISHED} && ${IN_CATEGORY}] | order(publishedAt desc)[0...24]${RECIPE_CARD},
+  "videos": *[_type == "video" && ${PUBLISHED} && ${IN_CATEGORY}] | order(publishedAt desc)[0...12]${VIDEO_CARD},
+  "posts": *[_type == "post" && ${PUBLISHED} && ${IN_CATEGORY}] | order(publishedAt desc)[0...6]${POST_CARD},
+  "recipeTotal": count(*[_type == "recipe" && ${PUBLISHED} && ${IN_CATEGORY}])
 }`);
 
 export const searchQuery = defineQuery(`*[_type in ["recipe", "post", "video"] && ${PUBLISHED} && (

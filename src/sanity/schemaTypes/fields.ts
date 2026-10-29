@@ -46,13 +46,17 @@ export const categoriesField = defineField({
   name: "categories",
   title: "Categories",
   type: "array",
-  description: "Pick one or more. You can add new categories in the Categories section.",
+  description:
+    "Pick one or more — main categories or sub-categories (shown as “Meze › Halloumi dishes”). You can add new ones in the Categories section.",
   of: [defineArrayMember({ type: "reference", to: [{ type: "category" }] })],
   validation: (rule) => rule.unique(),
 });
 
 export const excerptField = (description = "One or two sentences shown on cards and in Google results.") =>
   richTextField({ name: "excerpt", title: "Short summary", description, maxLength: 240, withLists: false });
+
+const checkYouTubeLink = (value?: string) =>
+  !value || /(youtube\.com|youtu\.be)\//i.test(value) || "This doesn’t look like a YouTube link.";
 
 export const youtubeUrlField = (required = false) =>
   defineField({
@@ -61,9 +65,23 @@ export const youtubeUrlField = (required = false) =>
     type: "url",
     description: "Paste the link from YouTube (Share → Copy link). Shorts links work too.",
     components: { input: YouTubeInput },
-    validation: (rule) =>
-      (required ? rule.required().error("Paste a YouTube link.") : rule).custom((value) => {
-        if (!value) return true;
-        return /(youtube\.com|youtu\.be)\//i.test(value) || "This doesn’t look like a YouTube link.";
+    validation: (rule) => (required ? rule.required().error("Paste a YouTube link.") : rule).custom(checkYouTubeLink),
+  });
+
+/** Several YouTube links, each with the same thumbnail preview as a single link. */
+export const youtubeUrlsField = (name: string, title: string, description: string) =>
+  defineField({
+    name,
+    title,
+    type: "array",
+    description,
+    of: [
+      defineArrayMember({
+        type: "url",
+        title: "YouTube link",
+        components: { input: YouTubeInput },
+        validation: (rule) => rule.custom(checkYouTubeLink),
       }),
+    ],
+    validation: (rule) => rule.unique(),
   });

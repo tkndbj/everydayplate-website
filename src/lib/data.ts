@@ -202,10 +202,10 @@ function mapCategories(raw: (Omit<Category, "image"> & { image?: RawImage })[] |
   return (raw ?? []).map((c) => ({ ...c, description: c.description ?? undefined, image: toImage(c.image, c.title) }));
 }
 
-export interface CategoryPage {
-  title: string;
-  slug: string;
+export interface CategoryPage extends CategoryRef {
   description?: RichText;
+  /** Sub-categories of a main category. */
+  children: Category[];
   recipes: RecipeCard[];
   recipeTotal: number;
   videos: VideoCard[];
@@ -220,9 +220,17 @@ export async function getCategoryPage(slug: string): Promise<CategoryPage | null
   if (!isSanityConfigured) {
     const category = sampleCategories.find((c) => c.slug === slug);
     if (!category) return null;
-    const has = (item: { categories: CategoryRef[] }) => item.categories.some((c) => c.slug === slug);
+    const has = (item: { categories: CategoryRef[] }) =>
+      item.categories.some((c) => c.slug === slug || c.parent?.slug === slug);
     const recipes = sampleRecipes.filter(has);
-    return { ...category, recipes, recipeTotal: recipes.length, videos: sampleVideos.filter(has), posts: samplePosts.filter(has) };
+    return {
+      ...category,
+      children: sampleCategories.filter((c) => c.parent?.slug === slug),
+      recipes,
+      recipeTotal: recipes.length,
+      videos: sampleVideos.filter(has),
+      posts: samplePosts.filter(has),
+    };
   }
 
   const raw = await client.fetch(categoryPageQuery, { slug });
@@ -230,7 +238,9 @@ export async function getCategoryPage(slug: string): Promise<CategoryPage | null
   return {
     title: raw.title,
     slug: raw.slug,
+    parent: raw.parent,
     description: raw.description ?? undefined,
+    children: mapCategories(raw.children),
     recipes: (raw.recipes ?? []).map(mapCard) as RecipeCard[],
     recipeTotal: raw.recipeTotal ?? 0,
     videos: (raw.videos ?? []).map((v: RawVideo) => mapVideo(v)),
@@ -247,7 +257,9 @@ export async function getRecipes(page = 1, category = ""): Promise<Paged<RecipeC
   const size = PAGE_SIZE.recipes;
 
   if (!isSanityConfigured) {
-    const filtered = sampleRecipes.filter((r) => !category || r.categories.some((c) => c.slug === category));
+    const filtered = sampleRecipes.filter(
+      (r) => !category || r.categories.some((c) => c.slug === category || c.parent?.slug === category),
+    );
     const { start, end } = range(page, size);
     return pageOf(filtered.slice(start, end), filtered.length, page, size);
   }
@@ -289,6 +301,7 @@ export async function getRecipe(slug: string): Promise<{ recipe: Recipe; related
     steps: raw.steps ?? [],
     tips: raw.tips ?? undefined,
     youtubeUrl: raw.youtubeUrl ?? undefined,
+    moreVideos: raw.moreVideos ?? [],
     intro: mapBlocks(raw.intro),
     updatedAt: raw.updatedAt,
   };

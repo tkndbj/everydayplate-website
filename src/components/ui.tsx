@@ -41,7 +41,7 @@ export function PageIntro({
   children,
   className,
 }: {
-  eyebrow?: string;
+  eyebrow?: ReactNode;
   title: string;
   children?: ReactNode;
   className?: string;
